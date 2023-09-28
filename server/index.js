@@ -35,7 +35,7 @@ class Connection {
         });
     }
 }
-
+conection = new Connection()
 
 // connection.connect((error)=>{
 //     if(error){
