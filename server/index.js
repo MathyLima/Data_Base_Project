@@ -56,9 +56,11 @@ class Connection {
                 console.log('Erro ao obter os nomes das colunas:',err);
                 callback(err);
             }else{
-                const columns = columnNames.join(', ');
+                //temos que 'filtrar' as colunas, senao a coluna 'id' será selecionada
+                const filteredColumns = columnNames.filter(columnName => columnName !== 'id');
+                const columns = filteredColumns.join(', ');
                 //placeholders inicialmente é um array, do mesmo tamanho que o array de colunas, e está preenchido por '?', separado de ','
-                const placeholders = Array(columnNames.length).fill('?').join(', ');
+                const placeholders = Array(filteredColumns.length).fill('?').join(', ');
                 const sql = `INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`;
                 //values é passado como argumento para o metodo query, que substituirá os placeholders pelas entradas de 'values'
                 this.connection.query(sql,values,(err,results)=>{
@@ -75,16 +77,61 @@ class Connection {
         }); 
     }
 
-}
-conection = new Connection()
+    research_by_name(tableName,name,callback){
+        const sql = `SELECT * FROM ${tableName} WHERE nome_cliente = '${name}' `;
+        this.connection.query(sql,(err,results)=>{
+            if(err){
+                console.error('Erro ao pesquisar nome');
+                callback(err);
+            }else{
+                if (results.length > 0){
+                    console.log('Registros encontrados!');
+                    results.forEach((row,index)=>{
+                        console.log(`Registro ${index + 1}:`);
+                        console.log(`ID: ${row.id}`);
+                        console.log(`Nome do Cliente: ${row.nome_cliente}`);
+                        console.log(`Busto: ${row.busto}`);
+                        console.log(`Quadril: ${row.quadril}`);
+                        console.log(`Cintura: ${row.cintura}`);
+                        console.log(`Última Compra: ${row.ultima_compra}`);
+                        console.log(`Tecido de Preferência: ${row.tecido_preferencia}`);
+                    });
+                }
+                    else{
+                        console.log('Nenhum registro encontrado');
+                    }
+                callback(null,results);
+                
+            }
+        });
+    }
 
-// connection.connect((error)=>{
-//     if(error){
-//         console.error('Error connecting to MySQL database',error);
-//     }else{
-//         console.log('Connected to MySQL database')
-//     }
-// })
+    deleteRow_by_name(tableName,name,callback){
+        const sql = `DELETE FROM ${tableName} WHERE nome_cliente = '${name}'`;
+        
+        this.connection.query(sql,(err,results)=>{
+            if(err){
+                console.error('Erro ao remover registro',err);
+                callback(err);
+            }else{
+                console.log('Registro removido com sucesso!');
+                callback(null,results);
+            }
+        })
+    }
+}
+const connection = new Connection('localhost', 'root', 'Youngmull4!', 'my_db');
+const values = ['Nome do Cliente', 90.5, 110.0, 80.0, '2023-09-30', 'Algodão'];
+
+// Chame o método createRow com uma função de retorno de chamada
+connection.deleteRow_by_name('clientes', 'Nome do Cliente', (err, result) => {
+    if (err) {
+        console.error('Erro ao criar uma linha na tabela de clientes:', err);
+    } else {
+        console.log('Linha inserida com sucesso na tabela de clientes!');
+        // Faça algo mais após a inserção bem-sucedida, se necessário
+    }
+});
 
 const PORT = process.env.PORT || 3001;
 
@@ -96,6 +143,7 @@ app.get("/api", (req, res) => {
 app.listen(PORT,()=>{
     console.log(`Server listening on ${PORT}`)
 })
+
 
 // Fazer com que o Node sirva os arquivos do app em React criado
 app.use(express.static(path.resolve(__dirname, '../client/build')));
