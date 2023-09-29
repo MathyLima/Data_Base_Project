@@ -35,6 +35,46 @@ class Connection {
             }
         });
     }
+
+    //Função para retornar o nome das colunas, dado uma tabela, dinamicamente
+    getTableColumns(tableName,callback){
+        const sql = `DESCRIBE ${tableName}`;
+        this.connection.query(sql,(err,results)=>{
+            if(err){
+                console.error('Erro ao obter os nomes das colunas: ',err)
+            }else{
+                const columnNames = results.map((row) => row.Field);
+                callback(null,columnNames);
+            }
+        })
+    }
+
+    
+    createRow(tableName,values,callback){
+        this.getTableColumns(tableName,(err,columnNames)=>{
+            if(err){
+                console.log('Erro ao obter os nomes das colunas:',err);
+                callback(err);
+            }else{
+                const columns = columnNames.join(', ');
+                //placeholders inicialmente é um array, do mesmo tamanho que o array de colunas, e está preenchido por '?', separado de ','
+                const placeholders = Array(columnNames.length).fill('?').join(', ');
+                const sql = `INSERT INTO ${tableName} (${columns}) VALUES (${placeholders})`;
+                //values é passado como argumento para o metodo query, que substituirá os placeholders pelas entradas de 'values'
+                this.connection.query(sql,values,(err,results)=>{
+                    if(err){
+                        console.error('Erro ao inserir registro',err);
+                        callback(err);
+                    }else{
+                        console.log('Registro inserido com sucesso!');
+                        callback(null, results);
+                    }
+                });
+            }
+
+        }); 
+    }
+
 }
 conection = new Connection()
 
