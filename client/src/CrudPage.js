@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import CreateForm from './CreateForm';
-import ReadForm from './ReadForm';
-import UpdateForm from './UpdateForm';
-import DeleteForm from './DeleteForm';
+import ReadDeleteForm from './ReadDeleteForm';
+import ReadUpdateForm from './ReadUpdateForm';
+
 
 class CRUDPage extends Component {
   constructor() {
@@ -27,30 +27,23 @@ class CRUDPage extends Component {
             </li>
             <li
               style={navItemStyle}
-              onClick={() => this.setActiveSection('read')}
+              onClick={() => this.setActiveSection('read-delete')}
             >
-              Read
+              Search-Delete
             </li>
             <li
               style={navItemStyle}
               onClick={() => this.setActiveSection('update')}
             >
-              Update
-            </li>
-            <li
-              style={navItemStyle}
-              onClick={() => this.setActiveSection('delete')}
-            >
-              Delete
+              Search-Update
             </li>
           </ul>
         </nav>
 
         <div style={formContainerStyle}>
           {activeSection === 'create' && <CreateForm />}
-          {activeSection === 'read' && <ReadForm />}
-          {activeSection === 'update' && <UpdateForm />}
-          {activeSection === 'delete' && <DeleteForm />}
+          {activeSection === 'read-delete' && <ReadDeleteForm />}
+          {activeSection === 'update' && <ReadUpdateForm />}
         </div>
       </div>
     );

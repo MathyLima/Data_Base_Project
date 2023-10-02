@@ -79,6 +79,22 @@ class Connection {
         }); 
     }
 
+    search_all(tableName,callback){
+        const sql = `SELECT * FROM ${tableName}`;
+        this.connection.query(sql,(err,results)=>{
+            if(err){
+                console.error('Erro ao listar clientes');
+                callback(err)
+            }else{
+                if(results.length > 0){
+                console.log('Clientes listados!');
+                }else{
+                    console.log('Nenhum registro encontrado!');
+                }
+                callback(null,results);
+            }
+        });
+    }
     //research
     research_by_name(tableName,name,callback){
         const sql = `SELECT * FROM ${tableName} WHERE nome_cliente = '${name}' `;
@@ -89,16 +105,6 @@ class Connection {
             }else{
                 if (results.length > 0){
                     console.log('Registros encontrados!');
-                    results.forEach((row,index)=>{
-                        console.log(`Registro ${index + 1}:`);
-                        console.log(`ID: ${row.id}`);
-                        console.log(`Nome do Cliente: ${row.nome_cliente}`);
-                        console.log(`Busto: ${row.busto}`);
-                        console.log(`Quadril: ${row.quadril}`);
-                        console.log(`Cintura: ${row.cintura}`);
-                        console.log(`Última Compra: ${row.ultima_compra}`);
-                        console.log(`Tecido de Preferência: ${row.tecido_preferencia}`);
-                    });
                 }
                     else{
                         console.log('Nenhum registro encontrado');
@@ -190,7 +196,18 @@ app.get("/api/search_clients", (req, res) => {
       }
     });
   });
-  
+
+app.get("/api/search_all_clients",(req,res)=>{
+    connection.search_all('clientes',(err,results)=>{
+        if(err){
+            console.error('Erro ao procurar clientes',err);
+            res.status(500).json({error: 'Eroo ao procurar clientes'});
+        }else{
+            console.log('Busca realizada com sucesso!');
+            res.status(200).json(results)
+        }
+    })
+})
 
 // Lidar com as solicitações GET feitas à rota /api
 app.get("/api", (req, res) => {
