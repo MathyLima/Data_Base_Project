@@ -1,6 +1,7 @@
 const mysql = require('mysql2')
 const path = require('path');
 const express = require('express');
+const bodyParser = require('body-parser'); // Importe o body-parser
 
 
 class Connection {
@@ -9,9 +10,9 @@ class Connection {
         this.user = user;
         this.password = password;
         this.database = database;
-        this.connected = false; // Initialize connected property
+        this.connected = false; // Inicializar connected como false
 
-        // Create the MySQL connection within the constructor
+        // Crie a conexão mysql utilizando o construtor
         this.connection = mysql.createConnection({
             host: this.host,
             user: this.user,
@@ -19,18 +20,18 @@ class Connection {
             database: this.database
         });
 
-        // Attempt to connect to the database
+        
         this.connect();
     }
 
     connect() {
-        // Establish a connection to the database
+        //conectando ao banco de dados
         this.connection.connect((err) => {
             if (err) {
-                console.error('Error connecting to the database:', err);
+                console.error('Erro ao connectar ao banco de dados:', err);
                 this.connected = false;
             } else {
-                console.log('Connected to the database');
+                console.log('Connectado ao banco de dados!');
                 this.connected = true;
             }
         });
@@ -49,7 +50,8 @@ class Connection {
         })
     }
 
-    
+
+    //create
     createRow(tableName,values,callback){
         this.getTableColumns(tableName,(err,columnNames)=>{
             if(err){
@@ -77,6 +79,7 @@ class Connection {
         }); 
     }
 
+    //research
     research_by_name(tableName,name,callback){
         const sql = `SELECT * FROM ${tableName} WHERE nome_cliente = '${name}' `;
         this.connection.query(sql,(err,results)=>{
@@ -105,48 +108,89 @@ class Connection {
             }
         });
     }
-
-    deleteRow_by_name(tableName,name,callback){
-        const sql = `DELETE FROM ${tableName} WHERE nome_cliente = '${name}'`;
-        
-        this.connection.query(sql,(err,results)=>{
-            if(err){
-                console.error('Erro ao remover registro',err);
-                callback(err);
-            }else{
-                console.log('Registro removido com sucesso!');
-                callback(null,results);
-            }
-        })
-    }
+    //deletar
+    deleteRow(tableName, id, callback) {
+        const sql = `DELETE FROM ${tableName} WHERE id = '${id}'`;
+      
+        this.connection.query(sql, (err, results) => {
+          if (err) {
+            console.error('Erro ao remover registro', err);
+            callback(err);
+          } else {
+            console.log('Registro removido com sucesso!');
+            callback(null, results);
+          }
+        });
+      }
+      
 }
-const connection = new Connection('localhost', 'root', 'Youngmull4!', 'my_db');
-const values = ['Nome do Cliente', 90.5, 110.0, 80.0, '2023-09-30', 'Algodão'];
 
-// Chame o método createRow com uma função de retorno de chamada
-connection.deleteRow_by_name('clientes', 'Nome do Cliente', (err, result) => {
-    if (err) {
-        console.error('Erro ao criar uma linha na tabela de clientes:', err);
-    } else {
-        console.log('Linha inserida com sucesso na tabela de clientes!');
-        // Faça algo mais após a inserção bem-sucedida, se necessário
-    }
-});
+
+// Conexão DB
+const connection = new Connection('localhost', 'root', 'Youngmull4!', 'my_db');
 
 const PORT = process.env.PORT || 3001;
 
 const app = express();
 
-app.get("/api", (req, res) => {
-    res.json({ message: "Hello from server!" });
-  });
-app.listen(PORT,()=>{
-    console.log(`Server listening on ${PORT}`)
-})
+app.listen(PORT, () => {
+  console.log(`Server listening on ${PORT}`);
+});
 
+// Configurar o body-parser
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Fazer com que o Node sirva os arquivos do app em React criado
 app.use(express.static(path.resolve(__dirname, '../client/build')));
+
+app.post("/api/create_client", (req, res) => {
+  // Aqui você pode acessar os dados enviados no corpo da solicitação
+  const { nome, busto, quadril, cintura, tecidoPreferencia, ultimaCompra, valorUltimaCompra } = req.body;
+
+  // Faça o processamento necessário com os dados
+
+  // Exemplo: inserir os dados no banco de dados
+  const values = [nome, busto, quadril, cintura, tecidoPreferencia, ultimaCompra, valorUltimaCompra];
+
+  connection.createRow('clientes', values, (err, result) => {
+    if (err) {
+      console.error('Erro ao criar um cliente:', err);
+      res.status(500).json({ error: 'Erro ao criar um cliente' });
+    } else {
+      console.log('Cliente criado com sucesso!');
+      res.status(200).json({ message: 'Cliente criado com sucesso!' });
+    }
+  });
+});
+app.delete("/api/delete_client",(req,res)=>{
+    const {id} = req.body;
+    const values = [id]
+    connection.deleteRow('clientes',id,(err,result)=>{
+        if(err){
+            console.error('Erro ao deletar um cliente:',err);
+            res.status(500).json({ error: 'Erro ao deletar um cliente'});
+        }else{
+            console.log('Cliente deletado com sucesso!');
+            res.status(200).json({ message: 'Cliente deletado com sucesso!' });
+        }
+    })
+})
+
+app.get("/api/search_clients", (req, res) => {
+    const { name } = req.query;
+    console.log(name);
+    connection.research_by_name('clientes', name, (err, results) => {
+      if (err) {
+        console.error('Erro ao procurar cliente com nome:', { name }, err);
+        res.status(500).json({ error: 'Erro ao procurar cliente' });
+      } else {
+        console.log('Busca realizada com sucesso!');
+        res.status(200).json(results); // Envie os resultados da pesquisa de volta para o cliente
+      }
+    });
+  });
+  
 
 // Lidar com as solicitações GET feitas à rota /api
 app.get("/api", (req, res) => {
