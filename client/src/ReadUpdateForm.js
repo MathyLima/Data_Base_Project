@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import './celulas.css';
+import './formulario.css';
 
 class ReadUpdateForm extends Component {
   constructor(props) {
@@ -19,6 +21,16 @@ class ReadUpdateForm extends Component {
         // Adicione mais campos aqui, se necessário
       },
     };
+    this.formFields = [
+      { name: 'nome', label: 'Nome do Cliente', type: 'text' },
+      { name: 'busto', label: 'Busto', type: 'number' },
+      { name: 'quadril', label: 'Quadril', type: 'number' },
+      { name: 'cintura', label: 'Cintura', type: 'number' },
+      { name: 'tecidoPreferencia', label: 'Tecido de Preferência', type: 'text' },
+      { name: 'ultimaCompra', label: 'Última Compra', type: 'date' },
+      { name: 'valorUltimaCompra', label: 'Valor da Última Compra', type: 'text' },
+      // Adicione mais campos conforme necessário
+    ];
   }
 
   componentDidMount() {
@@ -38,8 +50,16 @@ class ReadUpdateForm extends Component {
   }
 
   handleClientSelect = (clientId) => {
-    // Quando um cliente é selecionado, atualize o estado selectedClientId
+    const { selectedClientId } = this.state;
+
+    if (selectedClientId === clientId) {
+      // Não faça nada se o mesmo cliente for clicado novamente
+      return;
+    }
+
+    // Abra o formulário para o cliente selecionado
     this.setState({ selectedClientId: clientId });
+    document.body.classList.add('no-scroll'); // Adicione a classe no-scroll
   };
 
   handleInputChange = (event) => {
@@ -78,7 +98,6 @@ class ReadUpdateForm extends Component {
           console.log(`Dados do cliente com ID ${selectedClientId} atualizados com sucesso!`);
           // Limpe os dados do formulário de atualização e atualize a lista de clientes
           this.setState({
-            selectedClientId: null, // Desmarque o cliente selecionado
             updateFormData: {},     // Limpe os dados do formulário de atualização
           });
           this.handleSearchAllClients();
@@ -89,44 +108,12 @@ class ReadUpdateForm extends Component {
       .catch((error) => {
         console.error('Erro ao atualizar os dados do cliente:', error);
       });
+    this.setState({ selectedClientId: null, updateFormData: {} });
+    document.body.classList.remove('no-scroll');
   };
 
   render() {
     const { searchQuery, searchResults, selectedClientId, updateFormData } = this.state;
-
-    const cardStyle = {
-      width: '90%',
-      backgroundColor: '#f0f0f0', // Cor de fundo cinza claro
-      padding: '10px',
-      margin: '10px',
-      cursor: 'pointer',
-      borderRadius: '5px',
-      transition: 'background-color 0.3s',
-      display: 'flex',
-      flexDirection: 'column', // Exibir informações em coluna
-    };
-
-    const evenCardStyle = {
-      ...cardStyle,
-      backgroundColor: '#f0f0f0',
-    };
-
-    const oddCardStyle = {
-      ...cardStyle,
-      backgroundColor: '#f0f0f0',
-    };
-
-    const expandedCardStyle = {
-      ...cardStyle,
-      backgroundColor: '#ccc', // Cor de fundo um pouco mais escura quando expandida
-    };
-
-    const infoContainerStyle = {
-      display: 'flex',
-      flexDirection: 'row', // Exibir informações uma ao lado da outra
-      justifyContent: 'space-between', // Espaçamento entre as informações
-    };
-
     return (
       <div>
         <h2>Lista de Clientes</h2>
@@ -143,13 +130,13 @@ class ReadUpdateForm extends Component {
             searchResults.map((client, index) => (
               <div
                 key={client.id}
-                style={index % 2 === 0 ? evenCardStyle : oddCardStyle}
+                className='CardStyle'
                 onClick={() => this.handleClientSelect(client.id)}
               >
                 <p>Nome: {client.nome_cliente}</p>
                 {selectedClientId === client.id && (
-                  <div style={expandedCardStyle}>
-                    <div style={infoContainerStyle}>
+                  <div className='CardStyle'>
+                    <div className='CardStyle'>
                       <p>Busto: {client.busto}</p>
                       <p>Quadril: {client.quadril}</p>
                       <p>Cintura: {client.cintura}</p>
@@ -161,67 +148,21 @@ class ReadUpdateForm extends Component {
                     <div>
                       <h3>Formulário de Atualização</h3>
                       <form onSubmit={this.handleSubmitUpdate}>
-                        {/* Campos de entrada e manipuladores de alteração */}
-                        <div>
-                          <label>Nome:</label>
-                          <input
-                            type="text"
-                            value={updateFormData.nome_cliente || ''}
-                            onChange={this.handleUpdateFormChange('nome_cliente')}
-                          />
-                        </div>
-                        <div>
-                          <label>Busto:</label>
-                          <input
-                            type="text"
-                            value={updateFormData.busto || ''}
-                            onChange={this.handleUpdateFormChange('busto')}
-                          />
-                        </div>
-                        <div>
-                          <label>Quadril:</label>
-                          <input
-                            type="text"
-                            value={updateFormData.quadril || ''}
-                            onChange={this.handleUpdateFormChange('quadril')}
-                          />
-                        </div>
-                        <div>
-                          <label>Cintura:</label>
-                          <input
-                            type="text"
-                            value={updateFormData.cintura || ''}
-                            onChange={this.handleUpdateFormChange('cintura')}
-                          />
-                        </div>
-                        <div>
-                          <label>Tecido de Preferência:</label>
-                          <input
-                            type="text"
-                            value={updateFormData.tecido_preferencia || ''}
-                            onChange={this.handleUpdateFormChange('tecido_preferencia')}
-                          />
-                        </div>
-                        <div>
-                          <label>Última compra:</label>
-                          <input
-                            type="text"
-                            value={updateFormData.ultima_compra || ''}
-                            onChange={this.handleUpdateFormChange('ultima_compra')}
-                          />
-                        </div>
-                        <div>
-                          <label>Valor da última compra:</label>
-                          <input
-                            type="text"
-                            value={updateFormData.valorUltimaCompra || ''}
-                            onChange={this.handleUpdateFormChange('valorUltimaCompra')}
-                          />
-                        </div>
-                        {/* Adicione mais campos do formulário aqui */}
-                        <div>
-                          <button type="submit">Salvar Atualizações</button>
-                        </div>
+                        {this.formFields.map((field) => (
+                          <div className='Container' key={field.name}>
+                            <label className='Label'>{field.label}:</label>
+                            <input
+                              className='Input-Box'
+                              type={field.type}
+                              name={field.name}
+                              value={updateFormData[field.name] || ''}
+                              onChange={this.handleUpdateFormChange(field.name)}
+                            />
+                          </div>
+                        ))}
+                        <button type="submit" className='Submit-Bottom'>
+                          Salvar
+                        </button>
                       </form>
                     </div>
                   </div>

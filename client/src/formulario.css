@@ -1,0 +1,45 @@
+.Formulario {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.Container {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between; /* Espaço entre os elementos */
+  margin-bottom: 10px;
+}
+
+.Label {
+  width: 40%; /* Largura da etiqueta reduzida para acomodar o espaço do campo de entrada */
+  text-align: right; /* Alinhe o texto das etiquetas à direita */
+  margin-right: 10px; /* Adicione um espaço à direita das etiquetas */
+}
+
+.Input-Box {
+  width: 60%; /* Largura aumentada para acomodar o espaço do rótulo */
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.Submit-Bottom {
+  align-self: flex-end; /* Alinhe o botão no canto inferior direito */
+  margin-top: 10px; /* Adicione um espaço entre o último campo de entrada e o botão */
+  padding: 5px;
+  border-radius: 5px;
+  background-color: #f26716d2;
+  border: 1px solid #000000;
+  color: #fff;
+  transition: transform 0.3s; /* Adicione uma transição de transformação */
+}
+
+.Submit-Bottom:hover {
+  transform: scale(1.1); /* Aumente o tamanho do botão no hover */
+}

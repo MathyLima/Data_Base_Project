@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import './celulas.css'
+import './formulario.css'
 
 class ReadForm extends Component {
   constructor() {
@@ -73,39 +75,6 @@ class ReadForm extends Component {
   render() {
     const { searchQuery, searchResults, expandedClientId } = this.state;
 
-    const cardStyle = {
-      width: '90%',
-      backgroundColor: '#f0f0f0', // Cor de fundo cinza claro
-      padding: '10px',
-      margin: '10px',
-      cursor: 'pointer',
-      borderRadius: '5px',
-      transition: 'background-color 0.3s',
-      display: 'flex',
-      flexDirection: 'column', // Exibir informações em coluna
-    };
-
-    const evenCardStyle = {
-      ...cardStyle,
-      backgroundColor: '#f0f0f0',
-    };
-
-    const oddCardStyle = {
-      ...cardStyle,
-      backgroundColor: '#f0f0f0',
-    };
-
-    const expandedCardStyle = {
-      ...cardStyle,
-      backgroundColor: '#ccc', // Cor de fundo um pouco mais escura quando expandida
-    };
-
-    const infoContainerStyle = {
-      display: 'flex',
-      flexDirection: 'row', // Exibir informações uma ao lado da outra
-      justifyContent: 'space-between', // Espaçamento entre as informações
-    };
-
     return (
       <div>
         <h2>Lista de Clientes</h2>
@@ -122,23 +91,22 @@ class ReadForm extends Component {
             searchResults.map((client, index) => (
               <div
                 key={client.id}
-                style={index % 2 === 0 ? evenCardStyle : oddCardStyle}
                 onClick={() => this.handleExpand(client.id)}
+                className='CardStyle'
               >
                 <p>Nome: {client.nome_cliente}</p>
                 {expandedClientId === client.id && (
-                  <div style={expandedCardStyle}>
-                    <div style={infoContainerStyle}>
+                  <div className='CardStyle'>
+                    <div className='infoContainerStyle'>
                       <p>Busto: {client.busto}</p>
                       <p>Quadril: {client.quadril}</p>
                       <p>Cintura: {client.cintura}</p>
                       <p>Tecido de Preferência: {client.tecido_preferencia}</p>
                       <p>Última compra: {client.ultima_compra}</p>
                       <p>Valor da última compra: {client.valorUltimaCompra}</p>
-                      {/* Adicione mais informações de coluna aqui */}
                     </div>
                     <div>
-                      <button onClick={() => this.handleDelete(client.id)}>Excluir</button>
+                      <button className='Submit-Bottom' onClick={() => this.handleDelete(client.id)}>Excluir</button>
                     </div>
                   </div>
                 )}

@@ -114,6 +114,37 @@ class Connection {
             }
         });
     }
+    updateRow(tableName, id, values, callback) {
+        this.getTableColumns(tableName, (err, columnNames) => {
+          if (err) {
+            console.error('Erro ao obter os nomes das colunas:', err);
+            callback(err);
+          } else {
+            // Construa a cláusula SET com base nas colunas e valores fornecidos
+            const setClause = columnNames
+              .filter((columnName) => columnName !== 'id') // Exclua a coluna 'id' da atualização
+              .map((columnName) => `${columnName} = ?`)
+              .join(', ');
+      
+            // Construa a consulta SQL para atualização
+            const sql = `UPDATE ${tableName} SET ${setClause} WHERE id = ?`;
+      
+            // Adicione o ID ao final do array de valores
+            values.push(id);
+      
+            // Execute a consulta SQL para atualização
+            this.connection.query(sql, values, (err, results) => {
+              if (err) {
+                console.error('Erro ao atualizar registro', err);
+                callback(err);
+              } else {
+                console.log('Registro atualizado com sucesso!');
+                callback(null, results);
+              }
+            });
+          }
+        });
+      }
     //deletar
     deleteRow(tableName, id, callback) {
         const sql = `DELETE FROM ${tableName} WHERE id = '${id}'`;
@@ -150,6 +181,21 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Fazer com que o Node sirva os arquivos do app em React criado
 app.use(express.static(path.resolve(__dirname, '../client/build')));
 
+app.put("/api/update_client/:id",(req,res)=>{
+    const { id } = req.params;
+    const { nome, busto, quadril, cintura, tecidoPreferencia, ultimaCompra, valorUltimaCompra } = req.body;
+    const values = [nome, busto, quadril, cintura, tecidoPreferencia, ultimaCompra, valorUltimaCompra];
+
+    connection.updateRow('clientes', id, values, (err, result) => {
+    if (err) {
+      console.error('Erro ao atualizar um cliente:', err);
+      res.status(500).json({ error: 'Erro ao atualizar um cliente' });
+    } else {
+      console.log('Cliente atualizado com sucesso!');
+      res.status(200).json({ message: 'Cliente atualizado com sucesso!' });
+    }
+  });
+})
 app.post("/api/create_client", (req, res) => {
   // Aqui você pode acessar os dados enviados no corpo da solicitação
   const { nome, busto, quadril, cintura, tecidoPreferencia, ultimaCompra, valorUltimaCompra } = req.body;
