@@ -1,5 +1,5 @@
-import axios from 'axios';
 import React, { Component } from 'react';
+import axios from 'axios';
 
 class ReadUpdateForm extends Component {
   constructor(props) {
@@ -18,7 +18,6 @@ class ReadUpdateForm extends Component {
         valorUltimaCompra: '',
         // Adicione mais campos aqui, se necessário
       },
-      isUpdateFormVisible: false, // Controla a visibilidade do formulário de atualização
     };
   }
 
@@ -31,7 +30,7 @@ class ReadUpdateForm extends Component {
     // Faz uma solicitação para buscar todos os clientes diretamente em /api/search_all_clients
     axios.get(`/api/search_all_clients`)
       .then((response) => {
-        this.setState({ clients: response.data });
+        this.setState({ clients: response.data, searchResults: response.data });
       })
       .catch((error) => {
         console.error('Erro ao buscar todos os clientes:', error);
@@ -40,51 +39,25 @@ class ReadUpdateForm extends Component {
 
   handleClientSelect = (clientId) => {
     // Quando um cliente é selecionado, atualize o estado selectedClientId
-    // e limpe os dados do formulário de atualização
-    this.setState({
-      selectedClientId: clientId,
-      isUpdateFormVisible: false, // Feche o formulário de atualização
-      updateFormData: {},         // Limpe os dados do formulário de atualização
-    });
+    this.setState({ selectedClientId: clientId });
   };
 
   handleInputChange = (event) => {
     // Atualize o estado searchQuery com o valor da caixa de pesquisa
-    this.setState({ searchQuery: event.target.value });
-  };
-
-  handleSearch = () => {
-    const { searchQuery } = this.state;
-
-    // Faz uma solicitação para buscar clientes com base na pesquisa
-    axios.get(`/api/search_clients?name=${searchQuery}`)
-      .then((response) => {
-        this.setState({ clients: response.data });
-      })
-      .catch((error) => {
-        console.error('Erro ao pesquisar clientes:', error);
-      });
-  };
-
-  handleUpdate = () => {
-    const { selectedClientId, clients } = this.state;
-    // Encontre o cliente selecionado com base no ID
-    const selectedClient = clients.find((client) => client.id === selectedClientId);
-
-    // Defina os dados do formulário de atualização com os valores atuais do cliente selecionado
-    this.setState({
-      isUpdateFormVisible: true,  // Exiba o formulário de atualização
-      updateFormData: {
-        nome_cliente: selectedClient.nome_cliente,
-        busto: selectedClient.busto,
-        quadril: selectedClient.quadril,
-        cintura: selectedClient.cintura,
-        tecido_preferencia: selectedClient.tecido_preferencia,
-        ultima_compra: selectedClient.ultima_compra,
-        valorUltimaCompra: selectedClient.valorUltimaCompra,
-        // Adicione mais campos aqui, se necessário
-      },
+    const searchQuery = event.target.value;
+    this.setState({ searchQuery }, () => {
+      // Após atualizar a consulta de pesquisa, filtre a lista de clientes
+      this.filterClients();
     });
+  };
+
+  filterClients = () => {
+    const { searchQuery, clients } = this.state;
+    // Caso contrário, filtre a lista de clientes com base na consulta de pesquisa
+    const filteredClients = clients.filter((client) => {
+      return client.nome_cliente.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+    this.setState({ searchResults: filteredClients });
   };
 
   handleUpdateFormChange = (field) => (event) => {
@@ -105,8 +78,8 @@ class ReadUpdateForm extends Component {
           console.log(`Dados do cliente com ID ${selectedClientId} atualizados com sucesso!`);
           // Limpe os dados do formulário de atualização e atualize a lista de clientes
           this.setState({
-            isUpdateFormVisible: false, // Feche o formulário de atualização
-            updateFormData: {},         // Limpe os dados do formulário de atualização
+            selectedClientId: null, // Desmarque o cliente selecionado
+            updateFormData: {},     // Limpe os dados do formulário de atualização
           });
           this.handleSearchAllClients();
         } else {
@@ -118,16 +91,8 @@ class ReadUpdateForm extends Component {
       });
   };
 
-  handleCancelUpdate = () => {
-    // Limpe os dados do formulário de atualização
-    this.setState({
-      isUpdateFormVisible: false, // Feche o formulário de atualização
-      updateFormData: {},         // Limpe os dados do formulário de atualização
-    });
-  };
-
   render() {
-    const { clients, selectedClientId, searchQuery, updateFormData, isUpdateFormVisible } = this.state;
+    const { searchQuery, searchResults, selectedClientId, updateFormData } = this.state;
 
     const cardStyle = {
       width: '90%',
@@ -172,11 +137,10 @@ class ReadUpdateForm extends Component {
             value={searchQuery}
             onChange={this.handleInputChange}
           />
-          <button onClick={this.handleSearch}>Pesquisar</button>
         </div>
         <div>
-          {Array.isArray(clients) ? (
-            clients.map((client, index) => (
+          {Array.isArray(searchResults) ? (
+            searchResults.map((client, index) => (
               <div
                 key={client.id}
                 style={index % 2 === 0 ? evenCardStyle : oddCardStyle}
@@ -195,8 +159,70 @@ class ReadUpdateForm extends Component {
                       {/* Adicione mais informações de coluna aqui */}
                     </div>
                     <div>
-                      {/* Botão "Atualizar" agora exibe o formulário */}
-                      <button onClick={this.handleUpdate}>Atualizar</button>
+                      <h3>Formulário de Atualização</h3>
+                      <form onSubmit={this.handleSubmitUpdate}>
+                        {/* Campos de entrada e manipuladores de alteração */}
+                        <div>
+                          <label>Nome:</label>
+                          <input
+                            type="text"
+                            value={updateFormData.nome_cliente || ''}
+                            onChange={this.handleUpdateFormChange('nome_cliente')}
+                          />
+                        </div>
+                        <div>
+                          <label>Busto:</label>
+                          <input
+                            type="text"
+                            value={updateFormData.busto || ''}
+                            onChange={this.handleUpdateFormChange('busto')}
+                          />
+                        </div>
+                        <div>
+                          <label>Quadril:</label>
+                          <input
+                            type="text"
+                            value={updateFormData.quadril || ''}
+                            onChange={this.handleUpdateFormChange('quadril')}
+                          />
+                        </div>
+                        <div>
+                          <label>Cintura:</label>
+                          <input
+                            type="text"
+                            value={updateFormData.cintura || ''}
+                            onChange={this.handleUpdateFormChange('cintura')}
+                          />
+                        </div>
+                        <div>
+                          <label>Tecido de Preferência:</label>
+                          <input
+                            type="text"
+                            value={updateFormData.tecido_preferencia || ''}
+                            onChange={this.handleUpdateFormChange('tecido_preferencia')}
+                          />
+                        </div>
+                        <div>
+                          <label>Última compra:</label>
+                          <input
+                            type="text"
+                            value={updateFormData.ultima_compra || ''}
+                            onChange={this.handleUpdateFormChange('ultima_compra')}
+                          />
+                        </div>
+                        <div>
+                          <label>Valor da última compra:</label>
+                          <input
+                            type="text"
+                            value={updateFormData.valorUltimaCompra || ''}
+                            onChange={this.handleUpdateFormChange('valorUltimaCompra')}
+                          />
+                        </div>
+                        {/* Adicione mais campos do formulário aqui */}
+                        <div>
+                          <button type="submit">Salvar Atualizações</button>
+                        </div>
+                      </form>
                     </div>
                   </div>
                 )}
@@ -206,75 +232,6 @@ class ReadUpdateForm extends Component {
             <p>Nenhum resultado encontrado.</p>
           )}
         </div>
-        {/* Renderizar o formulário de atualização se isUpdateFormVisible for true */}
-        {isUpdateFormVisible && (
-          <div>
-            <h3>Formulário de Atualização</h3>
-            <form onSubmit={this.handleSubmitUpdate}>
-              <div>
-                <label>Nome:</label>
-                <input
-                  type="text"
-                  value={updateFormData.nome_cliente || ''}
-                  onChange={this.handleUpdateFormChange('nome_cliente')}
-                />
-              </div>
-              <div>
-                <label>Busto:</label>
-                <input
-                  type="text"
-                  value={updateFormData.busto || ''}
-                  onChange={this.handleUpdateFormChange('busto')}
-                />
-              </div>
-              <div>
-                <label>Quadril:</label>
-                <input
-                  type="text"
-                  value={updateFormData.quadril || ''}
-                  onChange={this.handleUpdateFormChange('quadril')}
-                />
-              </div>
-              <div>
-                <label>Cintura:</label>
-                <input
-                  type="text"
-                  value={updateFormData.cintura || ''}
-                  onChange={this.handleUpdateFormChange('cintura')}
-                />
-              </div>
-              <div>
-                <label>Tecido de Preferência:</label>
-                <input
-                  type="text"
-                  value={updateFormData.tecido_preferencia || ''}
-                  onChange={this.handleUpdateFormChange('tecido_preferencia')}
-                />
-              </div>
-              <div>
-                <label>Última compra:</label>
-                <input
-                  type="text"
-                  value={updateFormData.ultima_compra || ''}
-                  onChange={this.handleUpdateFormChange('ultima_compra')}
-                />
-              </div>
-              <div>
-                <label>Valor da última compra:</label>
-                <input
-                  type="text"
-                  value={updateFormData.valorUltimaCompra || ''}
-                  onChange={this.handleUpdateFormChange('valorUltimaCompra')}
-                />
-              </div>
-              {/* Adicione mais campos do formulário aqui */}
-              <div>
-                <button type="submit">Salvar Atualizações</button>
-                <button onClick={this.handleCancelUpdate}>Cancelar</button>
-              </div>
-            </form>
-          </div>
-        )}
       </div>
     );
   }

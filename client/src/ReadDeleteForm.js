@@ -1,30 +1,48 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
-class ReadDeleteForm extends Component {
+class ReadForm extends Component {
   constructor() {
     super();
     this.state = {
-      searchQuery: '',
-      searchResults: [],
+      clients: [],              // Armazena a lista de clientes
+      selectedClientId: null,   // Armazena o ID do cliente selecionado ou null se nenhum estiver selecionado
+      searchQuery: '',          // Armazena a consulta de pesquisa
       expandedClientId: null,
     };
   }
 
-  handleInputChange = (event) => {
-    this.setState({ searchQuery: event.target.value });
-  };
+  componentDidMount() {
+    // Chamando seu método para buscar todos os clientes ao inicializar a página
+    this.handleSearchAllClients();
+  }
 
-  handleSearch = () => {
-    const { searchQuery } = this.state;
-
-    axios.get(`/api/search_clients?name=${searchQuery}`)
+  handleSearchAllClients = () => {
+    // Faz uma solicitação para buscar todos os clientes diretamente em /api/search_all_clients
+    axios.get(`/api/search_all_clients`)
       .then((response) => {
-        this.setState({ searchResults: response.data });
+        this.setState({ clients: response.data, searchResults: response.data });
       })
       .catch((error) => {
-        console.error('Erro ao pesquisar clientes:', error);
+        console.error('Erro ao buscar todos os clientes:', error);
       });
+  }
+
+  handleInputChange = (event) => {
+    const searchQuery = event.target.value;
+    this.setState({ searchQuery }, () => {
+      // Após atualizar a consulta de pesquisa, filtre a lista de clientes
+      this.filterClients();
+    });
+  };
+
+  filterClients = () => {
+    const { searchQuery, clients } = this.state;
+    // Caso contrário, filtre a lista de clientes com base na consulta de pesquisa
+    const filteredClients = clients.filter((client) => {
+      return client.nome_cliente.toLowerCase().includes(searchQuery.toLowerCase());
+    });
+    this.setState({ searchResults: filteredClients });
   };
 
   handleExpand = (clientId) => {
@@ -39,8 +57,10 @@ class ReadDeleteForm extends Component {
       .then((response) => {
         if (response.status === 200) {
           console.log(`Cliente com ID ${clientId} excluído com sucesso!`);
-          // Atualize a lista de resultados após a exclusão
-          this.handleSearch();
+          // Atualize a lista de clientes após a exclusão
+          this.handleSearchAllClients();
+          // Limpe a consulta de pesquisa após a exclusão
+          this.setState({ searchQuery: '' });
         } else {
           console.error('Erro ao excluir o cliente.');
         }
@@ -88,15 +108,15 @@ class ReadDeleteForm extends Component {
 
     return (
       <div>
-        <h2>Pesquisar Clientes</h2>
-        <input
-          type="text"
-          placeholder="Pesquisar por nome"
-          value={searchQuery}
-          onChange={this.handleInputChange}
-        />
-        <button onClick={this.handleSearch}>Pesquisar</button>
-
+        <h2>Lista de Clientes</h2>
+        <div>
+          <input
+            type="text"
+            placeholder="Pesquisar por nome"
+            value={searchQuery}
+            onChange={this.handleInputChange}
+          />
+        </div>
         <div>
           {Array.isArray(searchResults) ? (
             searchResults.map((client, index) => (
@@ -106,22 +126,22 @@ class ReadDeleteForm extends Component {
                 onClick={() => this.handleExpand(client.id)}
               >
                 <p>Nome: {client.nome_cliente}</p>
-                {expandedClientId === client.id ? (
+                {expandedClientId === client.id && (
                   <div style={expandedCardStyle}>
                     <div style={infoContainerStyle}>
                       <p>Busto: {client.busto}</p>
                       <p>Quadril: {client.quadril}</p>
                       <p>Cintura: {client.cintura}</p>
                       <p>Tecido de Preferência: {client.tecido_preferencia}</p>
-                      <p>Ultima compra: {client.ultima_compra}</p>
-                      <p>Valor da ultima compra: {client.valorUltimaCompra}</p>
+                      <p>Última compra: {client.ultima_compra}</p>
+                      <p>Valor da última compra: {client.valorUltimaCompra}</p>
                       {/* Adicione mais informações de coluna aqui */}
                     </div>
                     <div>
                       <button onClick={() => this.handleDelete(client.id)}>Excluir</button>
                     </div>
                   </div>
-                ) : null}
+                )}
               </div>
             ))
           ) : (
@@ -133,4 +153,5 @@ class ReadDeleteForm extends Component {
   }
 }
 
-export default ReadDeleteForm;
+export default ReadForm;
+
