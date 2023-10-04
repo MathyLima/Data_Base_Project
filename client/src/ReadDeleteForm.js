@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import './celulas.css'
-import './formulario.css'
+import './celulas.css';
+import './formulario.css';
 
 class ReadForm extends Component {
   constructor() {
@@ -20,7 +20,6 @@ class ReadForm extends Component {
   }
 
   handleSearchAllClients = () => {
-    // Faz uma solicitação para buscar todos os clientes diretamente em /api/search_all_clients
     axios.get(`/api/search_all_clients`)
       .then((response) => {
         this.setState({ clients: response.data, searchResults: response.data });
@@ -29,24 +28,25 @@ class ReadForm extends Component {
         console.error('Erro ao buscar todos os clientes:', error);
       });
   }
-
+  
   handleInputChange = (event) => {
     const searchQuery = event.target.value;
     this.setState({ searchQuery }, () => {
-      // Após atualizar a consulta de pesquisa, filtre a lista de clientes
-      this.filterClients();
+      if (searchQuery === '') {
+        this.handleSearchAllClients();
+      } else {
+        axios.get(`/api/search_clients?name=${searchQuery}`)
+          .then((response) => {
+            console.log('Solicitação para /api/search_clients concluída com sucesso!');
+            this.setState({ searchResults: response.data });
+          })
+          .catch((error) => {
+            console.error('Erro ao fazer uma solicitação para /api/search_clients:', error);
+          });
+      }
     });
   };
-
-  filterClients = () => {
-    const { searchQuery, clients } = this.state;
-    // Caso contrário, filtre a lista de clientes com base na consulta de pesquisa
-    const filteredClients = clients.filter((client) => {
-      return client.nome_cliente.toLowerCase().includes(searchQuery.toLowerCase());
-    });
-    this.setState({ searchResults: filteredClients });
-  };
-
+  
   handleExpand = (clientId) => {
     this.setState((prevState) => ({
       expandedClientId: prevState.expandedClientId === clientId ? null : clientId,
@@ -86,7 +86,7 @@ class ReadForm extends Component {
             onChange={this.handleInputChange}
           />
         </div>
-        <div>
+        <div className='container-infos'>
           {Array.isArray(searchResults) ? (
             searchResults.map((client, index) => (
               <div
@@ -98,12 +98,12 @@ class ReadForm extends Component {
                 {expandedClientId === client.id && (
                   <div className='CardStyle'>
                     <div className='infoContainerStyle'>
-                      <p>Busto: {client.busto}</p>
-                      <p>Quadril: {client.quadril}</p>
-                      <p>Cintura: {client.cintura}</p>
-                      <p>Tecido de Preferência: {client.tecido_preferencia}</p>
-                      <p>Última compra: {client.ultima_compra}</p>
-                      <p>Valor da última compra: {client.valorUltimaCompra}</p>
+                      <p>Busto Largura: {client.busto_largura}</p>
+                      <p>Busto Altura: {client.busto_altura}</p>
+                      <p>Cintura Largura: {client.cintura_largura}</p>
+                      <p>Cintura Altura: {client.cintura_altura}</p>
+                      <p>Quadril Largura: {client.quadril_largura}</p>
+                      <p>Quadril Altura: {client.quadril_altura}</p>
                     </div>
                     <div>
                       <button className='Submit-Bottom' onClick={() => this.handleDelete(client.id)}>Excluir</button>
@@ -122,4 +122,3 @@ class ReadForm extends Component {
 }
 
 export default ReadForm;
-

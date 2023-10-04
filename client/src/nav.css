@@ -1,0 +1,40 @@
+.containerStyle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; 
+}
+
+.navContainerStyle {
+    width: 50%;
+}
+
+.navStyle {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.navItemStyle {
+    flex: 1;
+    padding: 10px;
+    background-color: #eee;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.navItemStyle:hover {
+    background-color: #b2b0b0;
+}
+.navItemStyle:focus{
+    color: azure;
+    background-color: #3c3c3c;
+}
+
+.formContainerStyle {
+    width: 50%;
+    padding: 20px;
+}

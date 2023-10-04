@@ -14,6 +14,11 @@
   align-items: center;
   justify-content: space-between; /* Espaço entre os elementos */
   margin-bottom: 10px;
+  
+}
+.container-infos{
+    max-height: 600px; /* Defina a altura máxima desejada */
+    overflow-y: auto; /* Adicione rolagem vertical quando necessário */
 }
 
 .Label {
@@ -27,6 +32,11 @@
   padding: 5px;
   border-radius: 5px;
   border: 1px solid #ccc;
+}
+
+.form-container {
+  max-height: 600px; /* Defina a altura máxima desejada */
+  overflow-y: auto; /* Adicione rolagem vertical quando necessário */
 }
 
 .Submit-Bottom {

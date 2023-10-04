@@ -181,12 +181,28 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Fazer com que o Node sirva os arquivos do app em React criado
 app.use(express.static(path.resolve(__dirname, '../client/build')));
 
-app.put("/api/update_client/:id",(req,res)=>{
-    const { id } = req.params;
-    const { nome, busto, quadril, cintura, tecidoPreferencia, ultimaCompra, valorUltimaCompra } = req.body;
-    const values = [nome, busto, quadril, cintura, tecidoPreferencia, ultimaCompra, valorUltimaCompra];
+app.put('/api/update_client/:id', (req, res) => {
+  const { id } = req.params;
+  const {
+    nome,
+    busto_largura,
+    busto_altura,
+    cintura_largura,
+    cintura_altura,
+    quadril_largura,
+    quadril_altura
+  } = req.body;
+  const values = [
+    nome,
+    busto_largura,
+    busto_altura,
+    cintura_largura,
+    cintura_altura,
+    quadril_largura,
+    quadril_altura
+  ];
 
-    connection.updateRow('clientes', id, values, (err, result) => {
+  connection.updateRow('clientes', id, values, (err, result) => {
     if (err) {
       console.error('Erro ao atualizar um cliente:', err);
       res.status(500).json({ error: 'Erro ao atualizar um cliente' });
@@ -195,15 +211,28 @@ app.put("/api/update_client/:id",(req,res)=>{
       res.status(200).json({ message: 'Cliente atualizado com sucesso!' });
     }
   });
-})
-app.post("/api/create_client", (req, res) => {
-  // Aqui você pode acessar os dados enviados no corpo da solicitação
-  const { nome, busto, quadril, cintura, tecidoPreferencia, ultimaCompra, valorUltimaCompra } = req.body;
+});
 
-  // Faça o processamento necessário com os dados
+app.post('/api/create_client', (req, res) => {
+  const {
+    nome,
+    busto_largura,
+    busto_altura,
+    cintura_largura,
+    cintura_altura,
+    quadril_largura,
+    quadril_altura
+  } = req.body;
 
-  // Exemplo: inserir os dados no banco de dados
-  const values = [nome, busto, quadril, cintura, tecidoPreferencia, ultimaCompra, valorUltimaCompra];
+  const values = [
+    nome,
+    busto_largura,
+    busto_altura,
+    cintura_largura,
+    cintura_altura,
+    quadril_largura,
+    quadril_altura
+  ];
 
   connection.createRow('clientes', values, (err, result) => {
     if (err) {
@@ -230,18 +259,19 @@ app.delete("/api/delete_client",(req,res)=>{
 })
 
 app.get("/api/search_clients", (req, res) => {
-    const { name } = req.query;
-    console.log(name);
-    connection.research_by_name('clientes', name, (err, results) => {
-      if (err) {
-        console.error('Erro ao procurar cliente com nome:', { name }, err);
-        res.status(500).json({ error: 'Erro ao procurar cliente' });
-      } else {
-        console.log('Busca realizada com sucesso!');
-        res.status(200).json(results); // Envie os resultados da pesquisa de volta para o cliente
-      }
-    });
+  const { name } = req.query;
+  console.log(name);
+  connection.research_by_name('clientes', name, (err, results) => {
+    if (err) {
+      console.error('Erro ao procurar cliente com nome:', { name }, err);
+      res.status(500).json({ error: 'Erro ao procurar cliente' });
+    } else {
+      console.log('Busca realizada com sucesso!');
+      res.status(200).json(results); // Envie os resultados da pesquisa de volta para o cliente
+    }
   });
+});
+
 
 app.get("/api/search_all_clients",(req,res)=>{
     connection.search_all('clientes',(err,results)=>{
@@ -254,12 +284,6 @@ app.get("/api/search_all_clients",(req,res)=>{
         }
     })
 })
-
-// Lidar com as solicitações GET feitas à rota /api
-app.get("/api", (req, res) => {
-  res.json({ message: "Hello from server!" });
-});
-
 // Todas as outras solicitações GET não tratadas retornarão nosso app em React
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));

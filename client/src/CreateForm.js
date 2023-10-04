@@ -1,20 +1,20 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import './formulario.css'
+import { formFields } from './components/formField'; // Certifique-se de que o caminho do seu módulo está correto
+import './formulario.css';
+
 class CreateForm extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
-    this.formFields = [
-      { name: 'nome', label: 'Nome do Cliente', type: 'text' },
-      { name: 'busto', label: 'Busto', type: 'number' },
-      { name: 'quadril', label: 'Quadril', type: 'number' },
-      { name: 'cintura', label: 'Cintura', type: 'number' },
-      { name: 'tecidoPreferencia', label: 'Tecido de Preferência', type: 'text' },
-      { name: 'ultimaCompra', label: 'Última Compra', type: 'date' },
-      { name: 'valorUltimaCompra', label: 'Valor da Última Compra', type: 'text' },
-      // Adicione mais campos conforme necessário
-    ];
+    this.state = {
+      nome: '',
+      busto: '',
+      quadril: '',
+      cintura: '',
+      tecidoPreferencia: '',
+      ultimaCompra: '',
+      valorUltimaCompra: '',
+    };
   }
 
   handleInputChange = (event) => {
@@ -25,9 +25,16 @@ class CreateForm extends Component {
   handleSubmit = async (event) => {
     event.preventDefault();
 
+    // Verifique se todos os campos obrigatórios estão preenchidos
+    const requiredFields = formFields.filter((field) => !this.state[field.name]);
+    if (requiredFields.length > 0) {
+      alert('Todos os campos são obrigatórios. Por favor, preencha todos os campos.');
+      return;
+    }
+
     // Obtenha os valores do estado do formulário
     const formValues = {};
-    this.formFields.forEach((field) => {
+    formFields.forEach((field) => {
       formValues[field.name] = this.state[field.name];
     });
 
@@ -39,7 +46,7 @@ class CreateForm extends Component {
 
         // Limpe os campos do formulário
         const emptyState = {};
-        this.formFields.forEach((field) => {
+        formFields.forEach((field) => {
           emptyState[field.name] = '';
         });
         this.setState(emptyState);
@@ -56,15 +63,16 @@ class CreateForm extends Component {
       <div>
         <h2>Formulário de Cadastro</h2>
         <form className='Formulario' onSubmit={this.handleSubmit}>
-          {this.formFields.map((field) => (
+          {formFields.map((field) => (
             <div className='Container' key={field.name}>
               <label className='Label'>{field.label}:</label>
               <input
                 className='Input-Box'
                 type={field.type}
                 name={field.name}
-                value={this.state[field.name] || ''}
+                value={this.state[field.name]}
                 onChange={this.handleInputChange}
+                required // Adicione o atributo required para tornar o campo obrigatório
               />
             </div>
           ))}
@@ -76,4 +84,5 @@ class CreateForm extends Component {
     );
   }
 }
+
 export default CreateForm;
